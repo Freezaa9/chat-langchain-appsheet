@@ -155,3 +155,6 @@ node_modules/
 notebooks
 
 .langgraph-data/
+.env.gcp.yaml.example
+.env.gcp.yaml
+config.py
