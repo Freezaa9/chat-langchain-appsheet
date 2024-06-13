@@ -102,10 +102,9 @@ Chat History:
 {chat_history}
 Follow Up Input: {question}
 Standalone Question:"""
+import config as config
 
-
-client = Client()
-
+client = Client(api_url=config.LANGCHAIN_ENDPOINT, api_key=config.LANGCHAIN_API_KEY)
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
@@ -117,8 +116,9 @@ app.add_middleware(
 )
 
 
-WEAVIATE_URL = os.environ["WEAVIATE_URL"]
-WEAVIATE_API_KEY = os.environ["WEAVIATE_API_KEY"]
+
+WEAVIATE_URL = config.WEAVIATE_URL#os.environ["WEAVIATE_URL"]
+WEAVIATE_API_KEY = config.WEAVIATE_API_KEY#os.environ["WEAVIATE_API_KEY"]
 
 
 class ChatRequest(BaseModel):

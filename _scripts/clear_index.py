@@ -8,10 +8,11 @@ from langchain.indexes import SQLRecordManager, index
 from langchain.vectorstores import Weaviate
 
 logger = logging.getLogger(__name__)
-
-WEAVIATE_URL = os.environ["WEAVIATE_URL"]
-WEAVIATE_API_KEY = os.environ["WEAVIATE_API_KEY"]
-RECORD_MANAGER_DB_URL = os.environ["RECORD_MANAGER_DB_URL"]
+from langchain_huggingface import HuggingFaceEmbeddings
+import config as config
+WEAVIATE_URL = config.WEAVIATE_URL#os.environ["WEAVIATE_URL"]
+WEAVIATE_API_KEY = config.WEAVIATE_API_KEY#os.environ["WEAVIATE_API_KEY"]
+RECORD_MANAGER_DB_URL = config.RECORD_MANAGER_DB_URL#os.environ["RECORD_MANAGER_DB_URL"]
 WEAVIATE_DOCS_INDEX_NAME = "LangChain_Combined_Docs_OpenAI_text_embedding_3_small"
 
 
@@ -24,7 +25,7 @@ def clear():
         client=client,
         index_name=WEAVIATE_DOCS_INDEX_NAME,
         text_key="text",
-        embedding=OpenAIEmbeddings(),
+        embedding=HuggingFaceEmbeddings(),#OpenAIEmbeddings(),
         by_text=False,
         attributes=["source", "title"],
     )

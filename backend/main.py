@@ -11,8 +11,9 @@ from langserve import add_routes
 from langsmith import Client
 from pydantic import BaseModel
 
-client = Client()
+import config as config
 
+client = Client(api_url=config.LANGCHAIN_ENDPOINT, api_key=config.LANGCHAIN_API_KEY)
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
