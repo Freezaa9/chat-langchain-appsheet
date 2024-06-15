@@ -16,6 +16,7 @@ from langchain_core.embeddings import Embeddings
 from langchain_openai import OpenAIEmbeddings
 from langchain_huggingface import HuggingFaceEmbeddings
 
+from rate_limit_recursive_loader import RateLimitedRecursiveUrlLoader
 import config as config
 
 logging.basicConfig(level=logging.INFO)
@@ -58,7 +59,7 @@ def load_langchain_docs():
 
 
 def load_langsmith_docs():
-    return RecursiveUrlLoader(
+    return RateLimitedRecursiveUrlLoader(
         url="https://docs.smith.langchain.com/",
         max_depth=8,
         extractor=simple_extractor,
@@ -71,15 +72,17 @@ def load_langsmith_docs():
             r"(?:[\#'\"]|\/[\#'\"])"
         ),
         check_response_status=True,
+        min_rate_limit=2.0,
+        max_rate_limit=5.0
     ).load()
 
 def load_appsheet_docs():
-    return RecursiveUrlLoader(
+    return RateLimitedRecursiveUrlLoader(
         url="https://support.google.com/appsheet/",
-        max_depth=4,
+        max_depth=1,
         extractor=simple_extractor,
         prevent_outside=True,
-        use_async=True,
+        use_async=False,
         timeout=600,
         # Drop trailing / to avoid duplicate pages.
         link_regex=(
@@ -87,6 +90,8 @@ def load_appsheet_docs():
             r"(?:[\#'\"]|\/[\#'\"])"
         ),
         check_response_status=True,
+        min_rate_limit=2.0,
+        max_rate_limit=5.0
     ).load()
 
 
