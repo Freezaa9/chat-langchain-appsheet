@@ -79,7 +79,7 @@ def load_langsmith_docs():
 def load_appsheet_docs():
     return RateLimitedRecursiveUrlLoader(
         url="https://support.google.com/appsheet/",
-        max_depth=1,
+        max_depth=8,
         extractor=simple_extractor,
         prevent_outside=True,
         use_async=False,
