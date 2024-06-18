@@ -77,7 +77,7 @@ def load_langsmith_docs():
     ).load()
 
 def load_appsheet_docs():
-    return RateLimitedRecursiveUrlLoader(
+    return RecursiveUrlLoader(
         url="https://support.google.com/appsheet/",
         max_depth=8,
         extractor=simple_extractor,
@@ -89,10 +89,26 @@ def load_appsheet_docs():
             f"href=[\"']{PREFIXES_TO_IGNORE_REGEX}((?:{SUFFIXES_TO_IGNORE_REGEX}.)*?)"
             r"(?:[\#'\"]|\/[\#'\"])"
         ),
-        check_response_status=True,
-        min_rate_limit=2.0,
-        max_rate_limit=5.0
+        check_response_status=True
     ).load()
+
+# def load_appsheet_docs():
+#     return RateLimitedRecursiveUrlLoader(
+#         url="https://support.google.com/appsheet/",
+#         max_depth=8,
+#         extractor=simple_extractor,
+#         prevent_outside=True,
+#         use_async=False,
+#         timeout=600,
+#         # Drop trailing / to avoid duplicate pages.
+#         link_regex=(
+#             f"href=[\"']{PREFIXES_TO_IGNORE_REGEX}((?:{SUFFIXES_TO_IGNORE_REGEX}.)*?)"
+#             r"(?:[\#'\"]|\/[\#'\"])"
+#         ),
+#         check_response_status=True,
+#         min_rate_limit=2.0,
+#         max_rate_limit=5.0
+#     ).load()
 
 
 def simple_extractor(html: str) -> str:

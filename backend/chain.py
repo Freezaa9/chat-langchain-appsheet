@@ -33,6 +33,8 @@ from langchain_core.runnables import (
 from langchain_fireworks import ChatFireworks
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_openai import ChatOpenAI
+from langchain_community.llms import Ollama
+# from langchain.llms import Ollama
 from langsmith import Client
 
 RESPONSE_TEMPLATE = """\
@@ -186,7 +188,6 @@ def serialize_history(request: ChatRequest):
             converted_chat_history.append(AIMessage(content=message["ai"]))
     return converted_chat_history
 
-
 def create_chain(llm: LanguageModelLike, retriever: BaseRetriever) -> Runnable:
     retriever_chain = create_retriever_chain(
         llm,
@@ -218,16 +219,19 @@ def create_chain(llm: LanguageModelLike, retriever: BaseRetriever) -> Runnable:
     def cohere_response_synthesizer(input: dict) -> RunnableSequence:
         return cohere_prompt | llm.bind(source_documents=input["docs"])
 
-    response_synthesizer = (
-        default_response_synthesizer.configurable_alternatives(
-            ConfigurableField("llm"),
-            default_key="openai_gpt_3_5_turbo",
-            anthropic_claude_3_haiku=default_response_synthesizer,
-            fireworks_mixtral=default_response_synthesizer,
-            google_gemini_pro=default_response_synthesizer,
-            cohere_command=cohere_response_synthesizer,
-        )
-        | StrOutputParser()
+    response_synthesizer = default_response_synthesizer
+    # response_synthesizer = (
+    #     default_response_synthesizer.configurable_alternatives(
+    #         ConfigurableField("llm"),
+    #         default_key="openai_gpt_3_5_turbo",
+    #         anthropic_claude_3_haiku=default_response_synthesizer,
+    #         fireworks_mixtral=default_response_synthesizer,
+    #         google_gemini_pro=default_response_synthesizer,
+    #         cohere_command=cohere_response_synthesizer,
+    #         local_ollama_orca=default_response_synthesizer,
+    #         local_ollama_tinyllama=default_response_synthesizer,
+    #     )
+    (response_synthesizer | StrOutputParser()
     ).with_config(run_name="GenerateResponse")
     return (
         RunnablePassthrough.assign(chat_history=serialize_history)
@@ -236,43 +240,78 @@ def create_chain(llm: LanguageModelLike, retriever: BaseRetriever) -> Runnable:
     )
 
 
-gpt_3_5 = ChatOpenAI(model="gpt-3.5-turbo-0125", temperature=0, streaming=True)
-claude_3_haiku = ChatAnthropic(
-    model="claude-3-haiku-20240307",
-    temperature=0,
-    max_tokens=4096,
-    anthropic_api_key=os.environ.get("ANTHROPIC_API_KEY", "not_provided"),
-)
-fireworks_mixtral = ChatFireworks(
-    model="accounts/fireworks/models/mixtral-8x7b-instruct",
-    temperature=0,
-    max_tokens=16384,
-    fireworks_api_key=os.environ.get("FIREWORKS_API_KEY", "not_provided"),
-)
-gemini_pro = ChatGoogleGenerativeAI(
-    model="gemini-pro",
-    temperature=0,
-    max_tokens=16384,
-    convert_system_message_to_human=True,
-    google_api_key=os.environ.get("GOOGLE_API_KEY", "not_provided"),
-)
-cohere_command = ChatCohere(
-    model="command",
-    temperature=0,
-    cohere_api_key=os.environ.get("COHERE_API_KEY", "not_provided"),
-)
-llm = gpt_3_5.configurable_alternatives(
-    # This gives this field an id
-    # When configuring the end runnable, we can then use this id to configure this field
-    ConfigurableField(id="llm"),
-    default_key="openai_gpt_3_5_turbo",
-    anthropic_claude_3_haiku=claude_3_haiku,
-    fireworks_mixtral=fireworks_mixtral,
-    google_gemini_pro=gemini_pro,
-    cohere_command=cohere_command,
-).with_fallbacks(
-    [gpt_3_5, claude_3_haiku, fireworks_mixtral, gemini_pro, cohere_command]
-)
+# gpt_3_5 = ChatOpenAI(model="gpt-3.5-turbo-0125", temperature=0, streaming=True)
+# claude_3_haiku = ChatAnthropic(
+#     model="claude-3-haiku-20240307",
+#     temperature=0,
+#     max_tokens=4096,
+#     anthropic_api_key=os.environ.get("anthropic_api_key", "not_provided"),
+# )
+# fireworks_mixtral = ChatFireworks(
+#     model="accounts/fireworks/models/mixtral-8x7b-instruct",
+#     temperature=0,
+#     max_tokens=16384,
+#     fireworks_api_key=os.environ.get("FIREWORKS_API_KEY", "not_provided"),
+# )
+# gemini_pro = ChatGoogleGenerativeAI(
+#     model="gemini-pro",
+#     temperature=0,
+#     max_tokens=16384,
+#     convert_system_message_to_human=True,
+#     google_api_key=os.environ.get("google_api_key", "not_provided"),
+# )
+# cohere_command = ChatCohere(
+#     model="command",
+#     temperature=0,
+#     cohere_api_key=os.environ.get("COHERE_API_KEY", "not_provided"),
+# )
+# local_ollama_orca=Ollama(
+#     model="orca-mini",
+#     temperature=0,
+# )
+# local_ollama_tinyllama=Ollama(
+#     model="tinyllama-mini",
+#     temperature=0,
+# )
+# llm = gpt_3_5.configurable_alternatives(
+#     # This gives this field an id
+#     # When configuring the end runnable, we can then use this id to configure this field
+#     ConfigurableField(id="llm"),
+#     default_key="openai_gpt_3_5_turbo",
+#     anthropic_claude_3_haiku=claude_3_haiku,
+#     fireworks_mixtral=fireworks_mixtral,
+#     google_gemini_pro=gemini_pro,
+#     cohere_command=cohere_command,
+#     local_ollama_orca=local_ollama_orca,
+#     local_ollama_tinyllama=local_ollama_tinyllama,
+# ).with_fallbacks(
+#     [gpt_3_5, claude_3_haiku, fireworks_mixtral, gemini_pro, cohere_command]
+# )
+
+from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
+from langchain.callbacks.manager import CallbackManager
+from langchain.callbacks.base import BaseCallbackHandler
+from typing import Any
+# callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
+class StreamingCallbackHandler(BaseCallbackHandler):
+    def __init__(self):
+        self.partial_output = ""
+
+    def on_llm_new_token(self, token: str, **kwargs: Any) -> None:
+        self.partial_output += token
+        print(token, end="", flush=True)
+llm = Ollama(
+    model="orca-mini",
+    # base_url='http://127.0.0.1:11434/',
+    #streaming=True,
+    temperature=0
+, callbacks=[StreamingCallbackHandler()])#callback_manager)
+gpt_3_5 = ChatOpenAI(base_url="http://localhost:1234/v1", temperature=0, streaming=True,api_key="lm-studio")
+gpt_3_5_2 = ChatOpenAI(base_url="http://127.0.0.1:11434/api/generate", model="tinyllama", temperature=0, streaming=True,api_key="ollama")
+# ).configurable_alternatives(
+#     # This gives this field an id
+#     ConfigurableField(id="llm")
+# )
 
 retriever = get_retriever()
-answer_chain = create_chain(llm, retriever)
+answer_chain = create_chain(gpt_3_5, retriever)

@@ -4,6 +4,7 @@
   "private": true,
   "packageManager": "yarn@1.22.19",
   "scripts": {
+    "start:debug": "cross-env NODE_OPTIONS='--inspect' next dev",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",

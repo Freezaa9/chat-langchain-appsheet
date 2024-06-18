@@ -117,19 +117,19 @@ export function ChatWindow(props: { conversationId: string }) {
           question: messageValue,
           chat_history: chatHistory,
         },
-        {
-          configurable: {
-            llm: llmDisplayName,
-          },
-          tags: ["model:" + llmDisplayName],
-          metadata: {
-            conversation_id: conversationId,
-            llm: llmDisplayName,
-          },
-        },
-        {
-          includeNames: [sourceStepName],
-        },
+        // {
+        //   configurable: {
+        //     llm: llmDisplayName,
+        //   },
+        //   tags: ["model:" + llmDisplayName],
+        //   metadata: {
+        //     conversation_id: conversationId,
+        //     llm: llmDisplayName,
+        //   },
+        // },
+        // {
+        //   includeNames: [sourceStepName],
+        // },
       );
       for await (const chunk of streamLog) {
         streamedResponse = applyPatch(streamedResponse, chunk.ops, undefined, false).newDocument;
@@ -241,7 +241,7 @@ export function ChatWindow(props: { conversationId: string }) {
           </Heading>
         )}
         <div className="text-white flex flex-wrap items-center mt-4">
-          <div className="flex items-center mb-2">
+          {/* <div className="flex items-center mb-2">
             <span className="shrink-0 mr-2">Powered by</span>
             {llmIsLoading ? (
               <Spinner className="my-2"></Spinner>
@@ -261,9 +261,11 @@ export function ChatWindow(props: { conversationId: string }) {
                   Mixtral (via Fireworks.ai)
                 </option>
                 <option value="cohere_command">Cohere</option>
+                <option value="local_ollama_orca">Local Ollama (orca-mini)</option>
+                <option value="local_ollama_tinyllama">Local Ollama (tinyllama)</option>
               </Select>
             )}
-          </div>
+          </div> */}
         </div>
       </Flex>
       <div
